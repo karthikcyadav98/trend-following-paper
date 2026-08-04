@@ -1,0 +1,82 @@
+name: trend-paper
+
+# Marks the book daily and rebalances monthly, matching the backtest's schedule.
+# Twice each weekday is plenty: this is a monthly-rebalance strategy, so extra
+# runs only refresh the mark-to-market, never the decisions.
+
+on:
+  schedule:
+    - cron: "25 13 * * 1-5"   # ~after US open
+    - cron: "25 21 * * 1-5"   # ~after US close
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: trend-paper
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The live path deliberately needs only these two.
+      - run: pip install --quiet pandas numpy
+
+      - name: Guard against universe drift
+        run: |
+          pip install --quiet yfinance
+          python -c "from live.universe import check_matches_backtest; check_matches_backtest(); print('universe OK')"
+
+      - name: Advance the paper book
+        run: |
+          python run_live.py update
+          python run_live.py report
+
+      - name: Commit state
+        run: |
+          git config user.name  "trend-paper bot"
+          git config user.email "actions@github.com"
+          git add -A state/
+          if git diff --staged --quiet; then echo "no change"; else
+            git commit -m "trend: $(date -u '+%Y-%m-%d %H:%M UTC')" && git push
+          fi
+
+      - name: Job summary
+        run: |
+          echo '### Trend paper book' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python run_live.py report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/state
+          cp web/index.html _site/
+          cp state/portfolio.json _site/state/ 2>/dev/null || true
+          cp output/tearsheet.png _site/ 2>/dev/null || true
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-Asset Trend Following — Live Paper Book</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --plane:#f9f9f7; --surface-1:#fcfcfb; --border:#e2e1dc;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#78776f;
+    --series-1:#2a78d6; --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
+    --grid:#ecebe6; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){ :root:where(:not([data-theme="light"])){
+    --plane:#0d0d0d; --surface-1:#1a1a19; --border:#33322f;
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8e8d84;
+    --series-1:#3987e5; --grid:#262523; } }
+  :root[data-theme="dark"]{ --plane:#0d0d0d; --surface-1:#1a1a19; --border:#33322f;
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8e8d84;
+    --series-1:#3987e5; --grid:#262523; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--text-primary);
+    font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 20px 72px}
+  header{display:flex;flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+  h1{font-size:21px;font-weight:640;letter-spacing:-.02em;margin:0}
+  .sub{color:var(--text-secondary);font-size:13.5px;margin:0 0 26px;max-width:74ch}
+  button{font:inherit;font-size:13px;padding:6px 13px;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-primary);cursor:pointer}
+  button:hover{border-color:var(--text-muted)}
+  .banner{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);
+    border-left:3px solid var(--good);background:var(--surface-1);border-radius:10px;
+    padding:12px 16px;margin-bottom:26px;font-size:13.5px;color:var(--text-secondary)}
+  .banner strong{color:var(--text-primary)}
+  section{margin-bottom:34px}
+  h2{font-size:12px;font-weight:660;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--text-muted);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:11px;padding:14px 16px}
+  .tile .k{font-size:11.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+  .tile .v{font-size:25px;font-weight:620;letter-spacing:-.025em;margin-top:5px;font-variant-numeric:tabular-nums}
+  .tile .n{font-size:12px;color:var(--text-secondary);margin-top:3px;font-variant-numeric:tabular-nums}
+  .up{color:var(--good)} .down{color:var(--critical)}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:11px;padding:16px}
+  .scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+  th{text-align:right;font-weight:580;color:var(--text-muted);font-size:11.5px;text-transform:uppercase;
+    letter-spacing:.04em;padding:0 10px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--grid);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--grid)}
+  .sym{font-weight:580}
+  .bar{height:7px;border-radius:4px;background:var(--series-1);display:inline-block;vertical-align:middle}
+  .empty{color:var(--text-muted);font-size:13.5px;padding:22px 4px;text-align:center}
+  figure{margin:0} figcaption{font-size:12.5px;color:var(--text-secondary);margin-top:10px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .foot{color:var(--text-muted);font-size:12.5px;margin-top:40px;line-height:1.7}
+  code{font-family:var(--mono);font-size:12px;background:var(--grid);padding:1.5px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Cross-Asset Trend Following</h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="stamp" style="font-size:12px;color:var(--text-muted)"></span>
+      <button id="theme">Theme</button><button id="reload">Refresh</button>
+    </div>
+  </header>
+  <p class="sub">
+    Time-series momentum across equities, rates, commodities, FX and crypto.
+    Multiscale 3/6/12-month signal, inverse-volatility sizing, 12% portfolio vol target,
+    monthly rebalance. <strong>Long-only, no leverage.</strong> Funded with &#8377;1,00,000.
+  </p>
+
+  <div class="banner">
+    <span aria-hidden="true">&#10003;</span>
+    <div>
+      <strong>This one passed its null tests.</strong> Sharpe 0.93 over 2005&#8211;2026;
+      all 24 parameter configurations positive; all 8 three&#8209;year sub&#8209;periods positive;
+      beats <strong>100% of 200 random-signal books</strong>. The deployed long&#8209;only variant
+      measured <strong>CAGR 8.8%, Sharpe 1.12, max drawdown &minus;10.5%</strong>.
+      Still a backtest, and 23% of rolling 12&#8209;month windows lost money.
+    </div>
+  </div>
+
+  <section><h2>Paper book</h2><div class="tiles" id="tiles"></div></section>
+
+  <section><h2>Equity</h2><div class="card"><figure>
+    <div id="equity"></div>
+    <figcaption id="eqcap">Mark&#8209;to&#8209;market, &#8377;1,00,000 start. Includes USDINR translation.</figcaption>
+  </figure></div></section>
+
+  <section><h2>Current book — target vs held</h2><div class="card scroll" id="book"></div></section>
+  <section><h2>Rebalance trades</h2><div class="card scroll" id="trades"></div></section>
+
+  <p class="foot">
+    Prices: Yahoo daily closes (stdlib fetcher). Costs 5bps per unit of turnover.
+    Rebalanced monthly, marked daily. Simulated &mdash; not investment advice.<br>
+    Refresh locally with <code>python3 run_live.py update</code>.
+  </p>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+const sgn=(n,d=2)=>(n>=0?"+":"−")+Math.abs(n).toFixed(d);
+const cls=n=>n>0?"up":n<0?"down":"";
+const when=ts=>new Date(ts).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+
+function table(cols,rows,empty){
+  if(!rows.length) return `<div class="empty">${empty}</div>`;
+  return `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+
+function equityChart(h){
+  const el=$("#equity");
+  if(!h||h.length<2){el.innerHTML=`<div class="empty">The curve appears once the book has more than one daily mark.</div>`;return;}
+  const W=900,H=250,P={t:14,r:74,b:26,l:10};
+  const ys=h.map(p=>p.equity_inr), start=ys[0];
+  let lo=Math.min(...ys,100000), hi=Math.max(...ys,100000);
+  const pad=(hi-lo)*.18||500; lo-=pad; hi+=pad;
+  const X=i=>P.l+(h.length<2?0:i/(h.length-1))*(W-P.l-P.r);
+  const Y=v=>P.t+(1-(v-lo)/(hi-lo))*(H-P.t-P.b);
+  const ticks=[lo,(lo+hi)/2,hi].map(v=>`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--grid)"/>
+    <text x="${W-P.r+8}" y="${(Y(v)+4).toFixed(1)}" fill="var(--text-muted)" font-size="11">${inr(v)}</text>`).join("");
+  const base=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(100000).toFixed(1)}" y2="${Y(100000).toFixed(1)}"
+      stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3 3"/>`;
+  const d=h.map((p,i)=>`${i?"L":"M"}${X(i).toFixed(1)},${Y(p.equity_inr).toFixed(1)}`).join(" ");
+  const last=h[h.length-1];
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paper book equity in rupees since inception.">
+    ${ticks}${base}
+    <path d="${d}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${X(h.length-1).toFixed(1)}" cy="${Y(last.equity_inr).toFixed(1)}" r="4.5"
+      fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+    <text x="${P.l}" y="${H-6}" fill="var(--text-muted)" font-size="11">${h[0].date}</text>
+    <text x="${W-P.r}" y="${H-6}" fill="var(--text-muted)" font-size="11" text-anchor="end">${last.date}</text>
+  </svg>`;
+}
+
+function render(s){
+  const pnl=s.equity_inr-s.start_inr;
+  const days=(s.last_update-s.started_at)/86400000;
+  $("#tiles").innerHTML=[
+    ["Equity",inr(s.equity_inr),`$${s.equity_usd.toFixed(2)} · ${sgn(100*pnl/s.start_inr)}%`,cls(pnl)],
+    ["P&L",(pnl>=0?"+":"−")+inr(Math.abs(pnl)).slice(1),`since ${new Date(s.started_at).toLocaleDateString()}`,cls(pnl)],
+    ["Gross exposure",(s.gross||0).toFixed(2)+"x",`${Object.keys(s.holdings||{}).length} holdings · no leverage`,""],
+    ["USDINR",(s.usdinr||0).toFixed(2),`start ${(s.usdinr_start||0).toFixed(2)}`,""],
+    ["Days live",days.toFixed(1),`rebalanced ${s.last_rebalance||"—"}`,""],
+  ].map(([k,v,n,c])=>`<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="n">${n}</div></div>`).join("");
+
+  equityChart(s.history);
+
+  const hv=s.holdings_value||{}, w=s.weights||{}, sig=s.signals||{}, vol=s.vol||{};
+  const names=[...new Set([...Object.keys(w),...Object.keys(hv)])]
+    .sort((a,b)=>(w[b]||0)-(w[a]||0));
+  $("#book").innerHTML=table(
+    ["Asset","Signal","Ann. vol","Target %","Held %","Value","" ],
+    names.filter(t=>(w[t]||0)>0.0001||(hv[t]||0)>1).map(t=>{
+      const held=s.equity_usd?(hv[t]||0)/s.equity_usd:0;
+      const sv=sig[t];
+      return [`<span class="sym">${t}</span>`,
+        sv==null?"—":`<span class="${cls(sv)}">${sv.toFixed(2)}</span>`,
+        vol[t]==null?"—":(100*vol[t]).toFixed(1)+"%",
+        (100*(w[t]||0)).toFixed(1)+"%",
+        (100*held).toFixed(1)+"%",
+        "$"+Math.round(hv[t]||0).toLocaleString(),
+        `<span class="bar" style="width:${Math.max(2,120*(w[t]||0)/0.25).toFixed(0)}px"></span>`];
+    }),"No positions yet.");
+
+  $("#trades").innerHTML=table(
+    ["When","Asset","Side","Units","Price","Notional","Target %"],
+    (s.trades||[]).slice().reverse().map(t=>[
+      `<span style="color:var(--text-secondary)">${when(t.ts)}</span>`,
+      `<span class="sym">${t.ticker}</span>`,
+      `<span class="${t.side==="buy"?"up":"down"}">${t.side.toUpperCase()}</span>`,
+      t.units.toFixed(4), t.price.toFixed(2),
+      "$"+Math.round(t.notional).toLocaleString(),
+      (100*t.target_weight).toFixed(1)+"%"]),
+    "No rebalance trades yet.");
+
+  $("#stamp").textContent=s.last_update?"updated "+when(s.last_update):"";
+}
+
+async function load(){
+  const get=async u=>{try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null;}catch{return null}};
+  const s=await get("api/portfolio")||await get("state/portfolio.json");
+  if(s&&!s.error) render(s);
+}
+$("#reload").onclick=load;
+$("#theme").onclick=()=>{const d=document.documentElement.getAttribute("data-theme")==="dark";
+  document.documentElement.setAttribute("data-theme",d?"light":"dark");};
+load(); setInterval(load,300000);
+</script>
+</body>
+</html>
