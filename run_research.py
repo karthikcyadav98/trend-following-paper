@@ -7,7 +7,7 @@
   python3 run_research.py power     how many trades an edge would need to prove
 """
 import sys, json
-from research import journal as J, protocol as P, monitor as M, seed as S
+from research import journal as J, protocol as P, monitor as M, seed as S, cycle as CY
 
 def cmd_status():
     s = J.summary(); n = s["tested"]
@@ -48,7 +48,26 @@ def cmd_power():
         print(f"    {label:<32} {k:>8,} trades  = {k/10/12:>6,.0f} years at 10/month")
     print()
 
-CMDS={"status":cmd_status,"seed":cmd_seed,"monitor":cmd_monitor,"power":cmd_power}
+def cmd_cycle():
+    """One autonomous research cycle: watch, re-verify, test, report."""
+    import pandas as pd
+
+    def retest_trend():
+        """Re-verify the deployed trend edge on all data available today."""
+        r = pd.read_csv("output/returns.csv", index_col=0, parse_dates=True).iloc[:, 0].dropna()
+        return float(r.mean()), float(r.std()), int(len(r))
+
+    def retest_trend_alpha():
+        from research import factors
+        r = pd.read_csv("output/returns.csv", index_col=0, parse_dates=True).iloc[:, 0].dropna()
+        a = factors.alpha(r)
+        return a["alpha_daily"], a["resid_sd"], a["n"]
+
+    CY.run({"trend.multiscale": retest_trend,
+            "trend.long_only": retest_trend,
+            "trend.alpha_vs_ff3": retest_trend_alpha})
+
+CMDS={"status":cmd_status,"seed":cmd_seed,"monitor":cmd_monitor,"power":cmd_power,"cycle":cmd_cycle}
 if __name__=="__main__":
     c=sys.argv[1] if len(sys.argv)>1 else "status"
     if c not in CMDS: print(__doc__); sys.exit(1)

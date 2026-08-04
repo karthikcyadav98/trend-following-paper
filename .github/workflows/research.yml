@@ -1,0 +1,45 @@
+name: research-cycle
+
+# Weekly autonomous research. This job can DEMOTE a finding and raise alarms;
+# it cannot promote a change or touch a live parameter -- see research/protocol.py.
+
+on:
+  schedule:
+    - cron: "40 6 * * 1"     # Monday mornings
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research-cycle
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install --quiet pandas numpy
+
+      - name: Run the cycle
+        run: python run_research.py cycle && python run_research.py status
+
+      - name: Commit journal + report
+        run: |
+          git config user.name  "research bot"
+          git config user.email "actions@github.com"
+          git add -A state/
+          if git diff --staged --quiet; then echo "no change"; else
+            git commit -m "research: cycle $(date -u '+%Y-%m-%d')" && git push
+          fi
+
+      - name: Summary
+        run: |
+          echo '### Research cycle' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python run_research.py status >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

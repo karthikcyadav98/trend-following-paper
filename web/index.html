@@ -96,6 +96,12 @@
   <section><h2>Current book — target vs held</h2><div class="card scroll" id="book"></div></section>
   <section><h2>Rebalance trades</h2><div class="card scroll" id="trades"></div></section>
 
+  <section><h2>Research journal — what is known, and what is dead</h2>
+    <div class="card">
+      <div id="research"></div>
+    </div>
+  </section>
+
   <p class="foot">
     Prices: Yahoo daily closes (stdlib fetcher). Costs 5bps per unit of turnover.
     Rebalanced monthly, marked daily. Simulated &mdash; not investment advice.<br>
@@ -184,10 +190,40 @@ function render(s){
   $("#stamp").textContent=s.last_update?"updated "+when(s.last_update):"";
 }
 
+function renderResearch(r){
+  if(!r){$("#research").innerHTML=`<div class="empty">Run <code>python3 run_research.py cycle</code>.</div>`;return;}
+  const j=r.journal||{};
+  const chip=(t,c)=>`<span style="display:inline-block;font-size:11px;font-weight:620;padding:2px 8px;
+    border-radius:5px;border:1px solid ${c};color:${c};margin:2px 4px 2px 0">${t}</span>`;
+  const watch=(r.watch||[]).map(w=>`<li><b>${w.book}</b> — ${w.status}
+    <span style="color:var(--text-muted)">${(w.detail||"").slice(0,70)}</span></li>`).join("");
+  const rv=(r.reverify||[]).map(x=>`<li><b>${x.name}</b> — <span class="${x.status==="HOLDS"?"up":x.status==="DECAYED"?"down":""}">${x.status}</span>
+    ${x.z!=null?`<span style="color:var(--text-muted)">z=${x.z.toFixed(2)} vs ${x.required_z.toFixed(2)}</span>`:""}</li>`).join("");
+  $("#research").innerHTML=`
+    <div class="tiles" style="margin-bottom:16px">
+      <div class="tile"><div class="k">Hypotheses tested</div><div class="v">${j.tested||0}</div>
+        <div class="n">evidence bar now z ≥ ${(r.required_z||0).toFixed(2)}</div></div>
+      <div class="tile"><div class="k">Supported</div><div class="v up">${(j.supported||[]).length}</div>
+        <div class="n">${(j.supported||[]).join(", ")||"—"}</div></div>
+      <div class="tile"><div class="k">Dead ends</div><div class="v">${(j.dead||[]).length}</div>
+        <div class="n">never retested without new data</div></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin:0 0 6px"><b>Live monitoring</b></p>
+    <ul style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">${watch||"<li>—</li>"}</ul>
+    <p style="font-size:13px;color:var(--text-secondary);margin:0 0 6px"><b>Re-verification of deployed findings</b></p>
+    <ul style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">${rv||"<li>—</li>"}</ul>
+    <p style="font-size:13px;color:var(--text-secondary);margin:0 0 6px"><b>Dead</b></p>
+    <div style="margin-bottom:14px">${(j.dead||[]).map(d=>chip(d,"var(--text-muted)")).join("")}</div>
+    <p style="font-size:12.5px;color:var(--text-muted);margin:0">
+      ${(r.rules||[]).map(x=>"• "+x).join("<br>")}</p>`;
+}
+
 async function load(){
   const get=async u=>{try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null;}catch{return null}};
   const s=await get("api/portfolio")||await get("state/portfolio.json");
   if(s&&!s.error) render(s);
+  const r=await get("api/research")||await get("state/research.json");
+  renderResearch(r&&!r.error?r:null);
 }
 $("#reload").onclick=load;
 $("#theme").onclick=()=>{const d=document.documentElement.getAttribute("data-theme")==="dark";

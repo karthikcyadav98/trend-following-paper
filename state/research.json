@@ -1,0 +1,77 @@
+{
+  "generated": 1785845417845,
+  "journal": {
+    "tested": 18,
+    "by_verdict": {
+      "REJECTED": 7,
+      "NOT SIGNIFICANT": 8,
+      "SUPPORTED": 3
+    },
+    "supported": [
+      "trend.multiscale",
+      "trend.long_only",
+      "trend.alpha_vs_ff3"
+    ],
+    "dead": [
+      "fib.baseline",
+      "fib.vol_filter",
+      "fib.trend_filter",
+      "fib.shallow_retrace",
+      "fib.single_target",
+      "fib.high_rr",
+      "fib.kitchen_sink",
+      "fib.session_asia",
+      "fib.forex_4h",
+      "nse.momentum",
+      "nse.lowvol",
+      "nse.reversal",
+      "nse.momentum.liquid_only",
+      "nse.momentum.most_liquid_tercile",
+      "nse.momentum.long_only"
+    ]
+  },
+  "required_z": 3.007786556473248,
+  "watch": [
+    {
+      "book": "trend-following",
+      "status": "TOO EARLY",
+      "detail": "1 daily marks; need >= 20"
+    }
+  ],
+  "reverify": [
+    {
+      "name": "trend.multiscale",
+      "status": "HOLDS",
+      "mean": 0.00043678251778397323,
+      "z": 4.044285655479618,
+      "required_z": 3.007786556473248
+    },
+    {
+      "name": "trend.long_only",
+      "status": "HOLDS",
+      "mean": 0.00043678251778397323,
+      "z": 4.044285655479618,
+      "required_z": 3.007786556473248
+    },
+    {
+      "name": "trend.alpha_vs_ff3",
+      "status": "HOLDS",
+      "mean": 0.0003582337209565021,
+      "z": 3.333201569842458,
+      "required_z": 3.007786556473248
+    }
+  ],
+  "next_hypothesis": {
+    "name": "nse.momentum.vol_scaled",
+    "hypothesis": "Scaling NSE momentum positions by inverse volatility improves risk-adjusted return",
+    "criteria": "SUPPORTED if TEST Sharpe > unscaled and z clears the adjusted bar"
+  },
+  "queue_remaining": 3,
+  "rules": [
+    "Live P&L can raise an alarm; it can never promote a change.",
+    "The significance bar rises with every hypothesis ever tested.",
+    "Dead ideas are never retested without genuinely new data.",
+    "Promotion requires pre-registration, holdout and beating the null.",
+    "Demotion is automatic when a supported finding stops clearing the bar."
+  ]
+}

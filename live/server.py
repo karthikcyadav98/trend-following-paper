@@ -24,6 +24,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         p = self.path.split("?")[0]
+        if p == "/api/research":
+            f = os.path.join(STATE, "research.json")
+            if not os.path.exists(f):
+                return self._send(json.dumps({"error": "not generated yet"}), code=404)
+            return self._send(open(f, "rb").read())
         if p == "/api/portfolio":
             f = os.path.join(STATE, "portfolio.json")
             if not os.path.exists(f):

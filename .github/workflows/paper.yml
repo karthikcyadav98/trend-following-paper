@@ -65,6 +65,7 @@ jobs:
           mkdir -p _site/state
           cp web/index.html _site/
           cp state/portfolio.json _site/state/ 2>/dev/null || true
+          cp state/research.json _site/state/ 2>/dev/null || true
           cp output/tearsheet.png _site/ 2>/dev/null || true
 
       - uses: actions/configure-pages@v5
