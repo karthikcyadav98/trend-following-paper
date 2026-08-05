@@ -1,5 +1,5 @@
 {
-  "generated": 1785911509391,
+  "generated": 1785912227666,
   "journal": {
     "tested": 22,
     "by_verdict": {
@@ -65,8 +65,12 @@
       "required_z": 3.0653831516447454
     }
   ],
-  "next_hypothesis": null,
-  "queue_remaining": 0,
+  "next_hypothesis": {
+    "name": "trend.continuous_signal",
+    "hypothesis": "A continuous trend-strength signal (trailing-return t-statistic, Baltas-Kosowski) cuts round-trip turnover by >=25% vs the binary multiscale sign signal with net Sharpe no worse, on the deployed long-only 1x config",
+    "criteria": "SUPPORTED only if TEST-period turnover falls >=25% AND net Sharpe difference (continuous minus binary) is not negative by more than 1 SE AND the turnover reduction clears the adjusted bar; 70/30 time split, deployed config"
+  },
+  "queue_remaining": 2,
   "rules": [
     "Live P&L can raise an alarm; it can never promote a change.",
     "The significance bar rises with every hypothesis ever tested.",

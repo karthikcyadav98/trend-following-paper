@@ -49,6 +49,27 @@ QUEUE = [
     {"name": "trend.crypto_exclusion",
      "hypothesis": "Excluding BTC/ETH from the trend book improves risk-adjusted return",
      "criteria": "SUPPORTED if TEST Sharpe improves and z clears the bar"},
+    # Queued 2026-08-05 from the Phase-1 literature review (mm/RESOURCES.md §7).
+    # Both carry published, replicated priors, halved per McLean-Pontiff before
+    # queueing. Barroso-Santa-Clara vol scaling was deliberately NOT queued:
+    # apply_portfolio_vol_target already implements it in the deployed book.
+    {"name": "trend.continuous_signal",
+     "hypothesis": "A continuous trend-strength signal (trailing-return t-statistic, "
+                   "Baltas-Kosowski) cuts round-trip turnover by >=25% vs the binary "
+                   "multiscale sign signal with net Sharpe no worse, on the deployed "
+                   "long-only 1x config",
+     "criteria": "SUPPORTED only if TEST-period turnover falls >=25% AND net Sharpe "
+                 "difference (continuous minus binary) is not negative by more than "
+                 "1 SE AND the turnover reduction clears the adjusted bar; "
+                 "70/30 time split, deployed config"},
+    {"name": "nseetf.premium_reversion",
+     "hypothesis": "A closing premium >0.5% of a liquid Nifty ETF to same-day AMFI NAV "
+                   "predicts negative ETF-minus-index relative return over the next 5 "
+                   "sessions (domestic ETFs only; feeder-ETF premiums are structural "
+                   "and excluded)",
+     "criteria": "SUPPORTED if mean 5-day event-window relative return is negative "
+                 "and |z| clears the adjusted bar on a holdout period; needs AMFI "
+                 "NAV history + bhavcopy panel joined first"},
 ]
 
 
