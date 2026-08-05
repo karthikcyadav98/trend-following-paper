@@ -1,9 +1,9 @@
 {
-  "generated": 1785845417845,
+  "generated": 1785911509391,
   "journal": {
-    "tested": 18,
+    "tested": 22,
     "by_verdict": {
-      "REJECTED": 7,
+      "REJECTED": 11,
       "NOT SIGNIFICANT": 8,
       "SUPPORTED": 3
     },
@@ -27,10 +27,14 @@
       "nse.reversal",
       "nse.momentum.liquid_only",
       "nse.momentum.most_liquid_tercile",
-      "nse.momentum.long_only"
+      "nse.momentum.long_only",
+      "nse.momentum.market_filter",
+      "nse.momentum.volscale",
+      "nse.momentum.filter_plus_vol",
+      "trend.crypto_exclusion"
     ]
   },
-  "required_z": 3.007786556473248,
+  "required_z": 3.0653831516447454,
   "watch": [
     {
       "book": "trend-following",
@@ -44,29 +48,25 @@
       "status": "HOLDS",
       "mean": 0.00043678251778397323,
       "z": 4.044285655479618,
-      "required_z": 3.007786556473248
+      "required_z": 3.0653831516447454
     },
     {
       "name": "trend.long_only",
       "status": "HOLDS",
       "mean": 0.00043678251778397323,
       "z": 4.044285655479618,
-      "required_z": 3.007786556473248
+      "required_z": 3.0653831516447454
     },
     {
       "name": "trend.alpha_vs_ff3",
       "status": "HOLDS",
       "mean": 0.0003582337209565021,
       "z": 3.333201569842458,
-      "required_z": 3.007786556473248
+      "required_z": 3.0653831516447454
     }
   ],
-  "next_hypothesis": {
-    "name": "nse.momentum.vol_scaled",
-    "hypothesis": "Scaling NSE momentum positions by inverse volatility improves risk-adjusted return",
-    "criteria": "SUPPORTED if TEST Sharpe > unscaled and z clears the adjusted bar"
-  },
-  "queue_remaining": 3,
+  "next_hypothesis": null,
+  "queue_remaining": 0,
   "rules": [
     "Live P&L can raise an alarm; it can never promote a change.",
     "The significance bar rises with every hypothesis ever tested.",

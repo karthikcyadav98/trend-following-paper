@@ -41,13 +41,11 @@ LIVE_BOOKS = {
 
 # Ideas waiting to be tested. Adding one costs something: it raises the bar for
 # everything afterwards, so speculative entries are not free.
+#
+# Pruned 2026-08-05 (journalled, kind="prune" -- no bar cost, nothing was run):
+#   nse.momentum.vol_scaled   duplicate of nse.momentum.volscale, already REJECTED
+#   nse.momentum.12_1_vs_6_1  lookback variant of a dead parent strategy
 QUEUE = [
-    {"name": "nse.momentum.vol_scaled",
-     "hypothesis": "Scaling NSE momentum positions by inverse volatility improves risk-adjusted return",
-     "criteria": "SUPPORTED if TEST Sharpe > unscaled and z clears the adjusted bar"},
-    {"name": "nse.momentum.12_1_vs_6_1",
-     "hypothesis": "A 6-1 month NSE momentum lookback beats 12-1",
-     "criteria": "SUPPORTED if TEST mean spread exceeds the 12-1 spread and z clears the bar"},
     {"name": "trend.crypto_exclusion",
      "hypothesis": "Excluding BTC/ETH from the trend book improves risk-adjusted return",
      "criteria": "SUPPORTED if TEST Sharpe improves and z clears the bar"},
