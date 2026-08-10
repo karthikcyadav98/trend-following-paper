@@ -1,5 +1,5 @@
 {
-  "generated": 1785912227666,
+  "generated": 1786349758926,
   "journal": {
     "tested": 22,
     "by_verdict": {
@@ -34,12 +34,18 @@
       "trend.crypto_exclusion"
     ]
   },
-  "required_z": 3.0653831516447454,
+  "required_z": 3.065383151644742,
   "watch": [
     {
       "book": "trend-following",
+      "live_return": 0.0030360763625034703,
+      "days": 4,
       "status": "TOO EARLY",
-      "detail": "1 daily marks; need >= 20"
+      "detail": "4 days live; need >= 20 to say anything",
+      "expected": 0.0013968253968253967,
+      "lo": -0.018509303514993903,
+      "hi": 0.021302954308644696,
+      "sd": 0.00995306445590965
     }
   ],
   "reverify": [
@@ -48,21 +54,21 @@
       "status": "HOLDS",
       "mean": 0.00043678251778397323,
       "z": 4.044285655479618,
-      "required_z": 3.0653831516447454
+      "required_z": 3.065383151644742
     },
     {
       "name": "trend.long_only",
       "status": "HOLDS",
       "mean": 0.00043678251778397323,
       "z": 4.044285655479618,
-      "required_z": 3.0653831516447454
+      "required_z": 3.065383151644742
     },
     {
       "name": "trend.alpha_vs_ff3",
       "status": "HOLDS",
-      "mean": 0.0003582337209565021,
-      "z": 3.333201569842458,
-      "required_z": 3.0653831516447454
+      "mean": 0.00035823372095650203,
+      "z": 3.3332015698424575,
+      "required_z": 3.065383151644742
     }
   ],
   "next_hypothesis": {
