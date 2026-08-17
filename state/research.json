@@ -1,5 +1,5 @@
 {
-  "generated": 1786349758926,
+  "generated": 1786952193651,
   "journal": {
     "tested": 22,
     "by_verdict": {
@@ -38,14 +38,14 @@
   "watch": [
     {
       "book": "trend-following",
-      "live_return": 0.0030360763625034703,
-      "days": 4,
+      "live_return": 0.005392282008221949,
+      "days": 9,
       "status": "TOO EARLY",
-      "detail": "4 days live; need >= 20 to say anything",
-      "expected": 0.0013968253968253967,
-      "lo": -0.018509303514993903,
-      "hi": 0.021302954308644696,
-      "sd": 0.00995306445590965
+      "detail": "9 days live; need >= 20 to say anything",
+      "expected": 0.0031428571428571426,
+      "lo": -0.02671633622487181,
+      "hi": 0.03300205051058609,
+      "sd": 0.014929596683864475
     }
   ],
   "reverify": [
