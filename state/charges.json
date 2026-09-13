@@ -1,0 +1,126 @@
+{
+  "as_of": "2026-08-21",
+  "us": {
+    "brokerage_per_order_usd": 0.0,
+    "brokerage_per_share_usd": 0.0,
+    "sec_fee_rate": 2.78e-05,
+    "sec_fee_note": "SEC Section 31, sells only, $27.80 per $1M (FY2025 rate)",
+    "finra_taf_per_share": 0.000166,
+    "finra_taf_cap_usd": 8.3,
+    "dividend_withholding": 0.25
+  },
+  "fx": {
+    "markup_default": 0.0075,
+    "inward_remit_fee_inr": 500.0,
+    "gst_rate": 0.18,
+    "gst_slabs": "1% up to Rs 1L (min Rs 250); Rs 1,000 + 0.5% to Rs 10L; Rs 5,500 + 0.1% above, capped Rs 60,000"
+  },
+  "india": {
+    "ltcg_months": 24,
+    "ltcg_rate": 0.125,
+    "ltcg_note": "Foreign ETFs are unlisted securities for Indian tax: 24-month threshold, 12.5% without indexation",
+    "stcg_note": "Short-term gains on foreign assets are taxed at slab, not at the 15%/20% rates that apply to Indian equity",
+    "slab_rates": [
+      0.0,
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.3
+    ],
+    "slab_default": 0.3,
+    "cess_rate": 0.04,
+    "surcharge_bands": [
+      {
+        "rate": 0.0,
+        "label": "below Rs 50L total income"
+      },
+      {
+        "rate": 0.1,
+        "label": "Rs 50L - 1Cr"
+      },
+      {
+        "rate": 0.15,
+        "label": "above Rs 1Cr (capital gains surcharge is capped here)"
+      }
+    ],
+    "tcs_rate": 0.2,
+    "tcs_threshold_inr": 1000000,
+    "tcs_note": "Charged on money sent OUT under LRS above Rs 10L per FY, and creditable against the year's tax -- a cash-flow cost",
+    "rule_115": "Capital gains on foreign assets are computed in rupees: cost at the rate on the buy date, proceeds at the rate on the sell date, so rupee depreciation is taxable gain"
+  },
+  "india_access": {
+    "SPY": {
+      "status": "ok",
+      "note": "1940-Act ETF, on every LRS platform"
+    },
+    "QQQ": {
+      "status": "ok",
+      "note": "1940-Act ETF, on every LRS platform"
+    },
+    "EFA": {
+      "status": "ok",
+      "note": "1940-Act ETF"
+    },
+    "EEM": {
+      "status": "ok",
+      "note": "1940-Act ETF"
+    },
+    "TLT": {
+      "status": "ok",
+      "note": "1940-Act ETF"
+    },
+    "IEF": {
+      "status": "ok",
+      "note": "1940-Act ETF"
+    },
+    "GLD": {
+      "status": "ok",
+      "note": "grantor trust; no US tax for a non-resident alien on gains"
+    },
+    "SLV": {
+      "status": "ok",
+      "note": "grantor trust"
+    },
+    "FXE": {
+      "status": "ok",
+      "note": "CurrencyShares grantor trust; thinner catalogues may omit it"
+    },
+    "FXY": {
+      "status": "ok",
+      "note": "CurrencyShares grantor trust; thinner catalogues may omit it"
+    },
+    "DBC": {
+      "status": "limited",
+      "note": "commodity pool, issues a K-1 -- often unavailable on Indian LRS platforms"
+    },
+    "USO": {
+      "status": "limited",
+      "note": "commodity pool, issues a K-1 -- often unavailable on Indian LRS platforms"
+    },
+    "UUP": {
+      "status": "limited",
+      "note": "commodity pool, issues a K-1 -- often unavailable on Indian LRS platforms"
+    },
+    "BTC-USD": {
+      "status": "separate",
+      "note": "LRS cannot be remitted to buy crypto; INR rail only, 30% + 1% TDS"
+    },
+    "ETH-USD": {
+      "status": "separate",
+      "note": "LRS cannot be remitted to buy crypto; INR rail only, 30% + 1% TDS"
+    }
+  },
+  "access_label": {
+    "ok": "Available via LRS",
+    "limited": "K-1 commodity pool -- check your platform",
+    "separate": "Not via LRS -- Indian exchange, different tax"
+  },
+  "price_basis": "Both the backtest and the live feed use ADJUSTED closes, so ETF expense ratios and reinvested dividends are already inside the return series. Nothing extra needs deducting for either.",
+  "book_cost_model": {
+    "cost_bps": 5.0,
+    "note": "What the simulation itself charges, per side, per unit of turnover. Left untouched on purpose: it is the number the validated backtest used."
+  },
+  "dividend_note": "The paper book models price returns only. A real holder would receive ETF distributions, lose 25% to US withholding, and pay Indian slab tax with a foreign tax credit. Neither the income nor the tax is in these figures.",
+  "disclaimer": "Estimate from published rates. It cannot know other income, carried-forward losses, or residency position. Not tax advice."
+}

@@ -29,6 +29,11 @@ class Handler(BaseHTTPRequestHandler):
             if not os.path.exists(f):
                 return self._send(json.dumps({"error": "not generated yet"}), code=404)
             return self._send(open(f, "rb").read())
+        if p == "/api/charges":
+            f = os.path.join(STATE, "charges.json")
+            if not os.path.exists(f):
+                return self._send(json.dumps({"error": "not generated yet"}), code=404)
+            return self._send(open(f, "rb").read())
         if p == "/api/portfolio":
             f = os.path.join(STATE, "portfolio.json")
             if not os.path.exists(f):
