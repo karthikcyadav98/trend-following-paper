@@ -33,6 +33,7 @@
     --grid:#2c2c2a; --axis:#383835; --hover:#242422; }
 
   *{box-sizing:border-box}
+  [hidden]{display:none!important}   /* author display rules otherwise beat the UA rule */
   html{scroll-behavior:smooth}
   body{margin:0;background:var(--plane);color:var(--text-primary);
     font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
@@ -253,6 +254,7 @@
     </div>
 
     <div class="scaled-note" id="scalednote" hidden></div>
+    <div class="scaled-note" id="withdrawnnote" hidden></div>
 
     <!-- ============ OVERVIEW ============ -->
     <div class="panel" id="p-overview">
@@ -770,10 +772,13 @@ function stackedBar(host, legendHost, segs) {
 
 /* ---------------- panels ---------------- */
 function renderOverview(s, r) {
-  const pnl = s.equity_inr - s.start_inr;
+  const withdrawn = s._withdrawn || 0;
   const hist = s.history || [];
-  const dd = drawdowns(hist), curDD = dd.length ? dd[dd.length-1] : 0;
-  const today = hist.length>1 ? hist[hist.length-1].equity_inr/hist[hist.length-2].equity_inr - 1 : null;
+  // Performance runs on total value: what is still invested PLUS what you took.
+  const tv = hist.map(h => ({...h, equity_inr: h.total_inr != null ? h.total_inr : h.equity_inr}));
+  const pnl = (s.equity_inr + withdrawn) - s.start_inr;
+  const dd = drawdowns(tv), curDD = dd.length ? dd[dd.length-1] : 0;
+  const today = tv.length>1 ? tv[tv.length-1].equity_inr/tv[tv.length-2].equity_inr - 1 : null;
   const lots = matchLots(s.trades);
   let unreal = 0;
   for (const t in (s.holdings||{})) {
@@ -784,23 +789,35 @@ function renderOverview(s, r) {
   const cashPct = s.equity_usd ? s.cash_usd/s.equity_usd : 0;
 
   $("#tiles").innerHTML = [
-    ["Equity", inr(s.equity_inr), `${usd(s.equity_usd)} &middot; ${spct(pnl/s.start_inr)} since inception`, cls(pnl), true],
-    ["Total P&amp;L", sinr(pnl), `on ${inr(s.start_inr)} funded`, cls(pnl)],
+    ["Still invested", inr(s.equity_inr),
+      withdrawn > 0 ? `${usd(s.equity_usd)} &middot; after ${inr(withdrawn)} withdrawn`
+                    : `${usd(s.equity_usd)} &middot; ${spct(pnl/s.start_inr)} since inception`,
+      cls(pnl), true],
+    ...(withdrawn > 0 ? [["Received", inr(withdrawn),
+       `${s._wcount} withdrawal${s._wcount===1?"":"s"} &middot; in hand after tax`, "up"]] : []),
+    ["Total P&amp;L", sinr(pnl),
+      withdrawn > 0 ? `book + received, vs ${inr(s.start_inr)} funded` : `on ${inr(s.start_inr)} funded`,
+      cls(pnl)],
     ["Last session", today==null?"&mdash;":spct(today), today==null?"needs two marks":`to ${esc(s.last_bar||"")}`, today==null?"":cls(today)],
     ["Unrealised", susd(unreal), `open positions, vs average fill`, cls(unreal)],
     ["Realised", susd(realised), `${lots.closed.length} closed round trip${lots.closed.length===1?"":"s"}`, cls(realised)],
-    ["Cash", usd0(s.cash_usd||0), `${pct(cashPct,1)} of equity`, ""],
+    ["Cash", usd0(s.cash_usd||0),
+      (s.cash_usd||0) < 0 ? "overdrawn by accrued trading costs" : `${pct(cashPct,1)} of equity`,
+      (s.cash_usd||0) < 0 ? "down" : ""],
     ["Gross exposure", (s.gross||0).toFixed(2)+"x", `${Object.keys(s.holdings||{}).length} positions &middot; 1.00x cap`, ""],
     ["Drawdown", pct(curDD,1), `worst so far ${pct(Math.min(...dd,0),1)}`, curDD<0?"down":"flat"],
   ].map(([k,v,n,c,hero]) =>
     `<div class="tile${hero?" hero":""}"><div class="k">${k}</div><div class="v ${c||""}">${v}</div>
      <div class="n">${n}</div></div>`).join("");
 
-  const pts = hist.map(h => ({t:h.date, v:h.equity_inr, note:usd(h.equity_usd)}));
+  const pts = tv.map((h,i) => ({t:h.date, v:h.equity_inr,
+    note: (hist[i].received_inr ? `${inr(hist[i].equity_inr)} invested + ${inr(hist[i].received_inr)} received`
+                                : usd(hist[i].equity_usd))}));
   lineChart($("#eq-chart"), $("#eq-cap"), pts, {
     include: s.start_inr, fmt: inr, area: true,
     aria: "Paper book equity in rupees since inception.",
     caption: `${hist.length} daily marks since ${hist.length?hist[0].date:"—"}. The flat line is the ${inr(s.start_inr)} funding level.`
+      + (withdrawn>0 ? ` Plotted as total value — book plus the ${inr(withdrawn)} already withdrawn — so taking money out does not read as a loss.` : "")
   });
   lineChart($("#eq-chart2"), $("#eq-cap2"), pts, {
     include: s.start_inr, fmt: inr, area: true,
@@ -1021,9 +1038,11 @@ function renderExecutions(s) {
 }
 
 function renderPerformance(s) {
-  const hist = s.history||[];
+  const histRaw = s.history||[];
+  // Measure on total value, so a withdrawal is not mistaken for a losing day.
+  const hist = histRaw.map(h => ({...h, equity_inr: h.total_inr != null ? h.total_inr : h.equity_inr}));
   const rets = dailyReturns(hist), dd = drawdowns(hist);
-  const tot = hist.length ? hist[hist.length-1].equity_inr/hist[0].equity_inr - 1 : 0;
+  const tot = hist.length ? hist[hist.length-1].equity_inr/(s.start_inr || hist[0].equity_inr) - 1 : 0;
   const up = rets.filter(r=>r.r>0).length, down = rets.filter(r=>r.r<0).length;
   const best = rets.length ? rets.reduce((a,b)=>b.r>a.r?b:a) : null;
   const worst = rets.length ? rets.reduce((a,b)=>b.r<a.r?b:a) : null;
@@ -1280,6 +1299,50 @@ function scaleState(s, k) {
   return v;
 }
 
+/* ---------------- applying withdrawals to the whole book ----------------
+   A recorded withdrawal is not a cosmetic entry on one tab. It removes a slice
+   of the book, so every panel has to show the smaller book -- otherwise the
+   Overview claims money that is no longer invested.
+
+   Two different numbers matter after a withdrawal, and conflating them is how
+   dashboards start lying:
+     BOOK VALUE  what is still invested and still at risk
+     TOTAL VALUE book value + what you actually received in hand
+   Performance (returns, drawdown, monthly ROI) is measured on TOTAL VALUE --
+   taking your own money out is not a loss, so it must not print as drawdown.
+   The charges and tax that the withdrawal cost you DO stay in that number,
+   because those really were lost. */
+function factorAt(rows, dateStr) {
+  const t = new Date(dateStr + "T23:59:59").getTime();
+  return rows.reduce((a, r) => r.ts <= t ? a * (1 - (r.frac || 0)) : a, 1);
+}
+function receivedBy(rows, dateStr) {
+  const t = new Date(dateStr + "T23:59:59").getTime();
+  return rows.reduce((a, r) => r.ts <= t ? a + (r.inHand || 0) : a, 0);
+}
+
+function applyWithdrawals(s, rows) {
+  if (!rows || !rows.length) return s;
+  const rem = remainingFraction(rows);
+  const v = JSON.parse(JSON.stringify(s));
+  // start_inr is deliberately NOT scaled: you still funded the full amount.
+  for (const k of ["cash_usd", "equity_usd", "equity_inr"]) v[k] *= rem;
+  for (const t in (v.holdings || {})) v.holdings[t] *= rem;
+  for (const t in (v.holdings_value || {})) v.holdings_value[t] *= rem;
+  const rate = v.usdinr || 1;
+  v.history = (v.history || []).map(h => {
+    const f = factorAt(rows, h.date), got = receivedBy(rows, h.date);
+    return {date: h.date,
+            equity_inr: h.equity_inr * f, equity_usd: h.equity_usd * f,
+            total_inr: h.equity_inr * f + got, received_inr: got};
+  });
+  v._withdrawn = rows.reduce((a, r) => a + (r.inHand || 0), 0);
+  v._withdrawnGross = rows.reduce((a, r) => a + (r.gross || 0), 0);
+  v._remaining = rem;
+  v._wcount = rows.length;
+  return v;
+}
+
 /* ---------------- charges & withdrawal ----------------
    Every rate comes from state/charges.json, which live/charges.py writes.
    Nothing here hardcodes a tax rate — a second copy would drift. */
@@ -1465,7 +1528,9 @@ function renderWithdraw(s, C) {
   }
   const rows = loadLedger();
   const rem = remainingFraction(rows);
-  const avail = scaleState(s, rem);                 // the book after past withdrawals
+  // `s` has already had past withdrawals applied in renderAll -- reducing it
+  // again here would compound the same withdrawal twice.
+  const avail = s;
   const availInr = avail.equity_inr || 0;
 
   const typed = parseFloat(String($("#w-amt").value).replace(/[^0-9.]/g, ""));
@@ -1735,6 +1800,20 @@ function buildFundControl(raw) {
     at each size.</div>`;
 }
 
+function showWithdrawnBanner(s) {
+  const note = $("#withdrawnnote");
+  if (!s._wcount) { note.hidden = true; return; }
+  note.hidden = false;
+  note.innerHTML = `<span aria-hidden="true">&#8681;</span><div>
+    <strong>${s._wcount} withdrawal${s._wcount===1?"":"s"} recorded &mdash; ${pct(1-s._remaining,1)} of the
+    book has been taken out.</strong>
+    <b>${inr(s.equity_inr)}</b> is still invested and <b>${inr(s._withdrawn)}</b> has been received,
+    so you are holding ${inr(s.equity_inr + s._withdrawn)} against ${inr(s.start_inr)} funded.
+    Positions, exposure and allocation now show the smaller book. History before a withdrawal is
+    left alone, and performance is measured on book <em>plus</em> what you took out &mdash; moving
+    your own money is not a loss, only the charges and tax it cost are.</div>`;
+}
+
 // Slab and surcharge options come from the rate card, not from a copy here.
 let WCTL_BUILT = false;
 function buildWithdrawControls(C) {
@@ -1752,11 +1831,10 @@ function buildWithdrawControls(C) {
   document.querySelectorAll(".presets [data-preset]").forEach(b =>
     b.addEventListener("click", () => {
       const s = LAST.s; if (!s) return;
-      const rem = remainingFraction(loadLedger());
-      const availInr = (s.equity_inr||0)*rem;
+      const availInr = s.equity_inr || 0;                // already net of past withdrawals
       const p = b.dataset.preset;
       const v = p === "profit"
-        ? Math.max(0, availInr - (s.start_inr||0)*rem)   // only what the book has made
+        ? Math.max(0, (availInr + (s._withdrawn||0)) - (s.start_inr||0))  // profit not yet taken
         : availInr * parseFloat(p);
       $("#w-amt").value = Math.round(v);
       redraw();
@@ -1764,8 +1842,8 @@ function buildWithdrawControls(C) {
 
   $("#w-record").addEventListener("click", () => {
     const s = LAST.s, C = LAST.c; if (!s || !C) return;
-    const rows = loadLedger(), rem = remainingFraction(rows);
-    const avail = scaleState(s, rem), availInr = avail.equity_inr || 0;
+    const rows = loadLedger();
+    const avail = s, availInr = avail.equity_inr || 0;   // already reduced upstream
     const typed = parseFloat(String($("#w-amt").value).replace(/[^0-9.]/g, ""));
     const amount = Math.max(0, Math.min(isFinite(typed) ? typed : 0, availInr));
     if (!(amount > 0)) return;
@@ -1781,7 +1859,8 @@ function buildWithdrawControls(C) {
       slab: o.slab, allowance: o.allowance, fxMarkup: o.fxMarkup});
     saveLedger(rows);
     $("#w-amt").value = "";
-    redraw();
+    // the book just got smaller -- every panel has to be redrawn, not this one
+    if (LAST.raw) renderAll(LAST.raw, LAST.r, LAST.c);
   });
 
   $("#w-clear").addEventListener("click", () => {
@@ -1789,7 +1868,7 @@ function buildWithdrawControls(C) {
     if (confirm("Clear the recorded withdrawals for " +
         FUND_SIZES.find(f=>f.id===FUND).label + "? This cannot be undone.")) {
       localStorage.removeItem(ledgerKey());
-      if (LAST.s) renderWithdraw(LAST.s, LAST.c);
+      if (LAST.raw) renderAll(LAST.raw, LAST.r, LAST.c);
     }
   });
 }
@@ -1823,8 +1902,10 @@ let LAST = {raw:null, s:null, r:null, c:null};
 function renderAll(raw, r, c) {
   if (!raw) return;
   buildFundControl(raw);
-  const s = scaleState(raw, fundFactor(raw, FUND));
+  const scaled = scaleState(raw, fundFactor(raw, FUND));
+  const s = applyWithdrawals(scaled, loadLedger());
   LAST = {raw, s, r, c};
+  showWithdrawnBanner(s);
   renderOverview(s, r);
   renderPositions(s);
   renderSignals(s);
