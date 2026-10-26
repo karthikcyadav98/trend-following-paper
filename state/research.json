@@ -1,5 +1,5 @@
 {
-  "generated": 1792418025735,
+  "generated": 1793021396272,
   "journal": {
     "tested": 22,
     "by_verdict": {
@@ -38,36 +38,36 @@
   "watch": [
     {
       "book": "trend-following",
-      "live_return": 0.01481769301759317,
-      "days": 58,
+      "live_return": 0.016321734206723892,
+      "days": 63,
       "status": "NORMAL",
       "detail": "live is inside the predicted distribution",
-      "expected": 0.020253968253968253,
-      "lo": -0.05554631235027845,
-      "hi": 0.09605424885821495,
-      "sd": 0.03790014030212335
+      "expected": 0.022,
+      "lo": -0.057,
+      "hi": 0.101,
+      "sd": 0.0395
     }
   ],
   "reverify": [
     {
       "name": "trend.multiscale",
       "status": "HOLDS",
-      "mean": 0.00043678251778397323,
-      "z": 4.044285655479618,
+      "mean": 0.00043678251778397746,
+      "z": 4.044285655479639,
       "required_z": 3.065383151644742
     },
     {
       "name": "trend.long_only",
       "status": "HOLDS",
-      "mean": 0.00043678251778397323,
-      "z": 4.044285655479618,
+      "mean": 0.00043678251778397746,
+      "z": 4.044285655479639,
       "required_z": 3.065383151644742
     },
     {
       "name": "trend.alpha_vs_ff3",
       "status": "HOLDS",
-      "mean": 0.0003478962794140067,
-      "z": 3.2469413277231616,
+      "mean": 0.000347896279414011,
+      "z": 3.2469413277231878,
       "required_z": 3.065383151644742
     }
   ],
