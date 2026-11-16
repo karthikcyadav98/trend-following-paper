@@ -1,5 +1,5 @@
 {
-  "generated": 1794242973795,
+  "generated": 1794846111471,
   "journal": {
     "tested": 22,
     "by_verdict": {
@@ -38,14 +38,14 @@
   "watch": [
     {
       "book": "trend-following",
-      "live_return": -0.011599907837353096,
-      "days": 75,
+      "live_return": -0.015829913804299656,
+      "days": 81,
       "status": "NORMAL",
       "detail": "live is inside the predicted distribution",
-      "expected": 0.026190476190476188,
-      "lo": -0.06000559045274081,
-      "hi": 0.11238654283369318,
-      "sd": 0.0430980333216085
+      "expected": 0.028285714285714286,
+      "lo": -0.06129186581747256,
+      "hi": 0.11786329438890114,
+      "sd": 0.044788790051593426
     }
   ],
   "reverify": [
@@ -65,10 +65,8 @@
     },
     {
       "name": "trend.alpha_vs_ff3",
-      "status": "HOLDS",
-      "mean": 0.0003478963524140821,
-      "z": 3.246943227782535,
-      "required_z": 3.065383151644742
+      "status": "ERROR",
+      "detail": "HTTP Error 404: Not Found"
     }
   ],
   "next_hypothesis": {
